@@ -55,12 +55,30 @@
       margin-bottom: 8px;
       color: #cbd5e1;
       font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+      border: 1px solid transparent;
+      transition: transform .18s ease, background .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .nav-item:hover {
+      background: rgba(0,255,100,.12);
+      color: #00ff66;
+      border-color: rgba(0,255,100,.22);
+      transform: translateX(4px);
+      box-shadow: 0 0 18px rgba(0,255,100,.12);
+    }
+
+    .nav-item:active {
+      transform: translateX(4px) scale(.98);
     }
 
     .nav-item.active {
-      background: rgba(0,255,100,.12);
+      background: linear-gradient(90deg, rgba(0,255,100,.18), rgba(0,255,100,.04));
       color: #00ff66;
       border-left: 4px solid #00ff66;
+      border-color: rgba(0,255,100,.22);
+      box-shadow: 0 0 18px rgba(0,255,100,.10);
     }
 
     .quick {
@@ -73,6 +91,13 @@
       padding: 18px;
       text-align: center;
       background: rgba(0,255,100,.06);
+      transition: .2s ease;
+    }
+
+    .quick:hover {
+      border-color: rgba(0,255,100,.35);
+      box-shadow: 0 0 22px rgba(0,255,100,.12);
+      transform: translateY(-2px);
     }
 
     .app {
@@ -190,7 +215,26 @@
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: #00ff66;
-      box-shadow: 0 0 0 3px rgba(0,255,100,.12);
+      box-shadow: 0 0 0 3px rgba(0,255,100,.12), 0 0 18px rgba(0,255,100,.16);
+    }
+
+    select {
+      cursor: pointer;
+      color-scheme: dark;
+      accent-color: #00ff66;
+    }
+
+    select option {
+      background: #020403;
+      color: #f8fafc;
+    }
+
+    select option:hover,
+    select option:focus,
+    select option:checked {
+      background: #00ff66 !important;
+      color: #020403 !important;
+      font-weight: 900;
     }
 
     button {
