@@ -904,6 +904,7 @@
     <div class="login-actions">
       <button class="btn-login" onclick="entrar()">Entrar</button>
       <button class="btn-signup" onclick="criarConta()">Criar conta</button>
+      <button class="btn-signup" onclick="recuperarSenha()" type="button">Esqueci minha senha</button>
     </div>
 
     <div class="login-help">Cada usuário vê apenas os próprios clientes.</div>
@@ -995,6 +996,8 @@
       <button class="filter-btn" onclick="filtrar('Morno', this)">🟡 Mornos</button>
       <button class="filter-btn" onclick="filtrar('Frio', this)">❄️ Frios</button>
       <button class="filter-btn" onclick="filtrar('Parados', this)">⏰ Parados</button>
+      <button class="filter-btn" onclick="document.getElementById('csvImport').click()">⬆ Importar CSV</button>
+      <input id="csvImport" type="file" accept=".csv,text/csv" style="display:none" onchange="importarCSV(event)">
     </div>
 
     <div class="section-title">
@@ -1201,6 +1204,147 @@ async function salvarCliente() {
   carregar();
 }
 
+
+function separarCSV(linha) {
+  const valores = [];
+  let atual = "";
+  let dentroAspas = false;
+
+  for (let i = 0; i < linha.length; i++) {
+    const char = linha[i];
+    const prox = linha[i + 1];
+
+    if (char === '"' && dentroAspas && prox === '"') {
+      atual += '"';
+      i++;
+    } else if (char === '"') {
+      dentroAspas = !dentroAspas;
+    } else if ((char === ";" || char === ",") && !dentroAspas) {
+      valores.push(atual.trim());
+      atual = "";
+    } else {
+      atual += char;
+    }
+  }
+
+  valores.push(atual.trim());
+  return valores.map(v => v.replace(/^"|"$/g, "").trim());
+}
+
+function normalizarCabecalho(texto) {
+  return String(texto || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function montarLeadDaLinha(cabecalhos, valores) {
+  const mapa = {};
+
+  cabecalhos.forEach((h, i) => {
+    mapa[normalizarCabecalho(h)] = valores[i] || "";
+  });
+
+  return {
+    nome: (mapa.nome || mapa.cliente || mapa.nomecliente || valores[0] || "").trim(),
+    telefone: (mapa.telefone || mapa.whatsapp || mapa.celular || mapa.numero || mapa.fone || valores[1] || "").trim(),
+    carro: (mapa.carro || mapa.veiculo || mapa.veiculodeinteresse || mapa.interesse || valores[2] || "").trim(),
+    valor: (mapa.valor || mapa.preco || valores[3] || "").trim() || null,
+    temperatura: (mapa.temperatura || valores[4] || "").trim(),
+    status: (mapa.status || valores[5] || "Novo").trim() || "Novo",
+    observacao: (mapa.observacao || mapa.obs || mapa.observacoes || valores[6] || "").trim()
+  };
+}
+
+async function importarCSV(event) {
+  if (!usuarioAtual) {
+    alert("Entre na sua conta primeiro.");
+    return;
+  }
+
+  const arquivo = event.target.files?.[0];
+  event.target.value = "";
+
+  if (!arquivo) return;
+
+  const texto = await arquivo.text();
+  const linhas = texto
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(Boolean);
+
+  if (linhas.length === 0) {
+    alert("CSV vazio.");
+    return;
+  }
+
+  let cabecalhos = separarCSV(linhas[0]);
+  const pareceCabecalho = cabecalhos.some(h => ["nome", "cliente", "telefone", "whatsapp", "celular", "carro", "veiculo"].includes(normalizarCabecalho(h)));
+  const linhasDados = pareceCabecalho ? linhas.slice(1) : linhas;
+
+  if (!pareceCabecalho) {
+    cabecalhos = ["nome", "telefone", "carro", "valor", "temperatura", "status", "observacao"];
+  }
+
+  const telefonesJaUsados = new Set(clientes.map(c => normalizarTelefone(c.telefone)));
+  const novosTelefones = new Set();
+  const paraInserir = [];
+  let invalidos = 0;
+  let duplicados = 0;
+
+  for (const linha of linhasDados) {
+    const valores = separarCSV(linha);
+    const lead = montarLeadDaLinha(cabecalhos, valores);
+
+    if (!lead.nome || !lead.telefone || !lead.carro || !telefoneValido(lead.telefone)) {
+      invalidos++;
+      continue;
+    }
+
+    if (lead.valor !== null && lead.valor !== "" && Number(lead.valor) < 0) {
+      invalidos++;
+      continue;
+    }
+
+    const telefoneNormalizado = normalizarTelefone(lead.telefone);
+
+    if (telefonesJaUsados.has(telefoneNormalizado) || novosTelefones.has(telefoneNormalizado)) {
+      duplicados++;
+      continue;
+    }
+
+    novosTelefones.add(telefoneNormalizado);
+
+    paraInserir.push({
+      ...lead,
+      telefone: telefoneNormalizado,
+      temperatura: ["Quente", "Morno", "Frio"].includes(lead.temperatura) ? lead.temperatura : "",
+      status: ["Novo", "Em negociação", "Fechado", "Perdido"].includes(lead.status) ? lead.status : "Novo",
+      user_id: usuarioAtual.id,
+      ultimo_contato: new Date().toISOString()
+    });
+  }
+
+  if (paraInserir.length === 0) {
+    alert(`Nenhum contato importado. Inválidos: ${invalidos}. Duplicados: ${duplicados}.`);
+    return;
+  }
+
+  const confirmar = confirm(`Importar ${paraInserir.length} contatos?\nIgnorados: ${invalidos} inválidos e ${duplicados} duplicados.`);
+  if (!confirmar) return;
+
+  const { error } = await supabaseClient.from("leads").insert(paraInserir);
+
+  if (error) {
+    alert("Erro ao importar: " + error.message);
+    return;
+  }
+
+  alert(`Importação concluída! ${paraInserir.length} contatos adicionados.`);
+  carregar();
+}
+
 async function excluir(id) {
   if (!confirm("Excluir este cliente?")) return;
 
@@ -1397,6 +1541,48 @@ async function entrar() {
   verificarSessao();
 }
 
+
+async function recuperarSenha() {
+  const email = document.getElementById("loginEmail").value.trim();
+
+  if (!email) {
+    alert("Digite seu email para recuperar a senha.");
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname
+  });
+
+  if (error) {
+    alert("Erro ao enviar recuperação: " + error.message);
+    return;
+  }
+
+  alert("Enviamos um link de recuperação para seu email.");
+}
+
+async function trocarSenhaRecuperacao() {
+  const novaSenha = prompt("Digite sua nova senha (mínimo 6 caracteres):");
+
+  if (!novaSenha) return;
+
+  if (novaSenha.length < 6) {
+    alert("A senha precisa ter pelo menos 6 caracteres.");
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.updateUser({ password: novaSenha });
+
+  if (error) {
+    alert("Erro ao atualizar senha: " + error.message);
+    return;
+  }
+
+  alert("Senha atualizada com sucesso!");
+  verificarSessao();
+}
+
 async function criarConta() {
   const nome = document.getElementById("loginNome").value.trim();
   const email = document.getElementById("loginEmail").value.trim();
@@ -1436,7 +1622,12 @@ async function sair() {
   verificarSessao();
 }
 
-supabaseClient.auth.onAuthStateChange(() => {
+supabaseClient.auth.onAuthStateChange((event) => {
+  if (event === "PASSWORD_RECOVERY") {
+    trocarSenhaRecuperacao();
+    return;
+  }
+
   verificarSessao();
 });
 
