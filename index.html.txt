@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>LeadCar CRM</title>
+  <style>
+    <style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #020617;
+    color: #e2e8f0;
+    padding: 20px;
+  }
+
+  h1 {
+    color: #38bdf8;
+    margin-bottom: 5px;
+  }
+
+  p {
+    color: #94a3b8;
+  }
+
+  input, select {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 10px;
+    border: 1px solid #1e293b;
+    background: #020617;
+    color: white;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border: 1px solid #38bdf8;
+  }
+
+  button {
+    padding: 10px 15px;
+    margin: 5px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    color: #020617;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+
+  .lead {
+    background: #020617;
+    border: 1px solid #1e293b;
+    padding: 15px;
+    margin-top: 12px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(56,189,248,0.05);
+  }
+
+  .lead h3 {
+    margin: 0;
+    color: #f1f5f9;
+  }
+
+  .lead p {
+    margin: 4px 0;
+    font-size: 14px;
+  }
+
+  .hot {
+    border-left: 4px solid #22c55e;
+  }
+
+  .cold {
+    border-left: 4px solid #ef4444;
+  }
+</style>
+  </style>
+</head>
+<body>
+
+  <h1>LeadCar CRM</h1>
+  <p>CRM simples para vendedores de veículos</p>
+
+  <input id="nome" placeholder="Nome do cliente">
+  <input id="telefone" placeholder="WhatsApp">
+  <input id="carro" placeholder="Carro de interesse">
+
+  <select id="status">
+    <option>Novo</option>
+    <option>Interessado</option>
+    <option>Negociando</option>
+    <option>Fechado</option>
+    <option>Perdido</option>
+  </select>
+
+  <button onclick="adicionarLead()">Adicionar Lead</button>
+
+  <h2>Leads</h2>
+  <div id="lista"></div>
+
+  <script>
+    let leads = JSON.parse(localStorage.getItem("leads")) || [];
+
+    function salvar() {
+      localStorage.setItem("leads", JSON.stringify(leads));
+    }
+
+    function adicionarLead() {
+      const nome = document.getElementById("nome").value;
+      const telefone = document.getElementById("telefone").value;
+      const carro = document.getElementById("carro").value;
+      const status = document.getElementById("status").value;
+
+      if (!nome || !telefone || !carro) {
+        alert("Preencha nome, telefone e carro.");
+        return;
+      }
+
+      leads.push({
+        nome,
+        telefone,
+        carro,
+        status,
+        ultimoContato: new Date().toLocaleDateString("pt-BR")
+      });
+
+      salvar();
+      renderizar();
+
+      document.getElementById("nome").value = "";
+      document.getElementById("telefone").value = "";
+      document.getElementById("carro").value = "";
+    }
+
+    function gerarMensagem(lead) {
+      return `Oi ${lead.nome}, tudo bem? Vi que você demonstrou interesse no ${lead.carro}. Ainda está procurando esse modelo ou posso te mostrar algumas opções parecidas?`;
+    }
+
+    function abrirWhatsApp(telefone, mensagem) {
+      const numero = telefone.replace(/\D/g, "");
+      const texto = encodeURIComponent(mensagem);
+      window.open(`https://wa.me/55${numero}?text=${texto}`, "_blank");
+    }
+
+    function excluirLead(index) {
+      leads.splice(index, 1);
+      salvar();
+      renderizar();
+    }
+
+    function renderizar() {
+      const lista = document.getElementById("lista");
+      lista.innerHTML = "";
+
+      leads.forEach((lead, index) => {
+        const classe = lead.status === "Negociando" ? "hot" : lead.status === "Perdido" ? "cold" : "";
+
+        lista.innerHTML += `
+          <div class="lead ${classe}">
+            <h3>${lead.nome}</h3>
+            <p><strong>WhatsApp:</strong> ${lead.telefone}</p>
+            <p><strong>Carro:</strong> ${lead.carro}</p>
+            <p><strong>Status:</strong> ${lead.status}</p>
+            <p><strong>Último contato:</strong> ${lead.ultimoContato}</p>
+
+            <button onclick='abrirWhatsApp("${lead.telefone}", "${gerarMensagem(lead)}")'>
+              Chamar no WhatsApp
+            </button>
+
+            <button onclick="excluirLead(${index})">
+              Excluir
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    renderizar();
+  </script>
+
+</body>
+</html>
