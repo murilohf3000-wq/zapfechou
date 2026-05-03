@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>ZapFechou PRO</title>
 
   <link rel="manifest" href="manifest.json">
@@ -378,6 +379,245 @@
       }
       .actions { justify-content: flex-start; }
     }
+
+
+    /* ===== MOBILE V4 - CORREÇÃO FORÇADA ===== */
+    html, body {
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow-x: hidden !important;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    img, input, select, textarea, button, .app, .layout, .panel, .filters, .table-box, .stat {
+      max-width: 100% !important;
+    }
+
+    @media (max-width: 1050px) {
+      body {
+        background: radial-gradient(circle at top left, rgba(0,255,100,.10), transparent 24%), #020403;
+      }
+
+      .layout {
+        display: block !important;
+        width: 100% !important;
+      }
+
+      .sidebar {
+        display: none !important;
+      }
+
+      .app {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 10px 10px 24px !important;
+      }
+
+      .topbar {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+        margin-bottom: 14px !important;
+      }
+
+      h1 {
+        font-size: 28px !important;
+        line-height: 1 !important;
+      }
+
+      .subtitle {
+        font-size: 12px !important;
+        line-height: 1.25 !important;
+        margin-top: 5px !important;
+      }
+
+      .badge {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+      }
+
+      .stats {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        margin-bottom: 14px !important;
+      }
+
+      .stat {
+        min-height: 86px !important;
+        padding: 12px !important;
+        border-radius: 16px !important;
+      }
+
+      .stat::after {
+        width: 78px !important;
+        height: 78px !important;
+        right: -20px !important;
+        bottom: -20px !important;
+      }
+
+      .stat span {
+        font-size: 12px !important;
+      }
+
+      .stat strong {
+        font-size: 24px !important;
+        margin-top: 4px !important;
+      }
+
+      .stat small {
+        font-size: 11px !important;
+      }
+
+      .panel {
+        padding: 14px !important;
+        border-radius: 16px !important;
+        margin-bottom: 14px !important;
+      }
+
+      .panel h2, .section-title h2 {
+        font-size: 18px !important;
+        margin-bottom: 12px !important;
+      }
+
+      .form-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+        align-items: stretch !important;
+      }
+
+      input, select, textarea {
+        min-width: 0 !important;
+        width: 100% !important;
+        padding: 11px !important;
+        border-radius: 11px !important;
+        font-size: 13px !important;
+      }
+
+      textarea {
+        grid-column: 1 / -1 !important;
+        min-height: 64px !important;
+      }
+
+      #btnSalvar {
+        grid-column: 1 / -1 !important;
+        min-height: 42px !important;
+        padding: 11px !important;
+      }
+
+      #btnCancelar {
+        grid-column: 1 / -1 !important;
+        min-height: 42px !important;
+      }
+
+      .filters {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        gap: 8px !important;
+        padding: 10px !important;
+        margin-bottom: 14px !important;
+        border-radius: 16px !important;
+      }
+
+      .filter-btn {
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+        padding: 9px 11px !important;
+        font-size: 12px !important;
+      }
+
+      .section-title {
+        align-items: flex-start !important;
+        gap: 4px !important;
+        margin-bottom: 10px !important;
+      }
+
+      .hint {
+        font-size: 11px !important;
+        text-align: right !important;
+      }
+
+      .table-box {
+        border-radius: 16px !important;
+        overflow: visible !important;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .table-head {
+        display: none !important;
+      }
+
+      .lead-row {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+        padding: 12px !important;
+        margin-bottom: 10px !important;
+        border-radius: 16px !important;
+        background: rgba(3,8,7,.88) !important;
+        border: 1px solid rgba(0,255,100,.20) !important;
+      }
+
+      .lead-row > .client,
+      .lead-row > .actions,
+      .lead-row > .obs-line {
+        grid-column: 1 / -1 !important;
+      }
+
+      .client {
+        gap: 10px !important;
+      }
+
+      .avatar {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 13px !important;
+        flex: 0 0 auto !important;
+      }
+
+      .lead-row > div {
+        min-width: 0 !important;
+        font-size: 13px !important;
+        overflow-wrap: anywhere !important;
+      }
+
+      .tag {
+        font-size: 12px !important;
+        padding: 6px 9px !important;
+      }
+
+      .actions {
+        justify-content: flex-start !important;
+        gap: 8px !important;
+      }
+
+      .icon-btn {
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 11px !important;
+      }
+
+      .obs-line {
+        font-size: 12px !important;
+        padding: 9px !important;
+        margin-top: 0 !important;
+      }
+    }
+
+    @media (max-width: 340px) {
+      .stats,
+      .form-grid,
+      .lead-row {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
   </style>
 </head>
 
