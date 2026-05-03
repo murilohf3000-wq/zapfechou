@@ -997,14 +997,37 @@
     </div>
 
     <div class="panel">
-      <h2 id="formTitle">Adicionar novo cliente</h2>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
 
-      <div class="data-actions">
-        <input id="csvImport" type="file" accept=".csv,text/csv" style="display:none" onchange="importarCSV(event)">
-        <button class="btn-import" onclick="document.getElementById('csvImport').click()" type="button">⬆ Importar CSV</button>
-        <div class="data-hint">Importe uma planilha CSV com nome, telefone e veículo. Números inválidos e duplicados são ignorados.</div>
-      </div>
+  <h2 id="formTitle" style="margin:0;">Adicionar novo cliente</h2>
 
+  <div style="display:flex; align-items:center; gap:6px;">
+    
+    <input id="csvImport" type="file" accept=".csv,text/csv" style="display:none" onchange="importarCSV(event)">
+
+    <button 
+      onclick="document.getElementById('csvImport').click()" 
+      style="
+        background: rgba(0,255,100,.08);
+        color: #00ff66;
+        border: 1px solid rgba(0,255,100,.25);
+        padding: 6px 10px;
+        font-size: 11px;
+        border-radius: 8px;
+        font-weight: 800;
+        cursor: pointer;
+      "
+    >
+      ⬆ CSV
+    </button>
+
+  </div>
+
+</div>
+
+<div style="font-size:12px; color:#94a3b8; margin-bottom:10px;">
+  Importe CSV com nome, telefone e veículo. Dados inválidos são ignorados.
+</div>
       <div class="form-grid">
         <input id="nome" placeholder="👤 Nome do cliente">
         <input id="telefone" placeholder="☏ WhatsApp">
