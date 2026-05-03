@@ -751,6 +751,97 @@
       .user-chip { width: fit-content; flex-wrap: wrap; border-radius: 16px; }
     }
 
+
+    /* ===== PERFIL / USUÁRIO LOGADO ===== */
+    .account-area {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .account-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 13px;
+      border-radius: 18px;
+      color: #d1fae5;
+      border: 1px solid rgba(0,255,100,.25);
+      background: rgba(0,255,100,.07);
+      box-shadow: 0 0 24px rgba(0,255,100,.08);
+    }
+
+    .account-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #00ff66;
+      background: rgba(0,255,100,.12);
+      border: 1px solid rgba(0,255,100,.30);
+      font-size: 16px;
+    }
+
+    .account-text { display: grid; gap: 2px; line-height: 1.1; }
+    .account-text strong { font-size: 14px; color: #f8fafc; }
+    .account-text span {
+      font-size: 11px;
+      color: #00ff66;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .2px;
+    }
+
+    .account-config,
+    .account-logout {
+      min-height: 38px;
+      padding: 9px 12px;
+      border-radius: 14px;
+      font-size: 12px;
+      border: 1px solid rgba(148,163,184,.20);
+      background: rgba(0,0,0,.35);
+      color: #cbd5e1;
+    }
+
+    .account-logout {
+      color: #ff8a8a;
+      border-color: rgba(239,68,68,.25);
+      background: rgba(239,68,68,.10);
+    }
+
+    @media (max-width: 760px) {
+      .account-area {
+        order: -1;
+        width: 100%;
+        justify-content: flex-start;
+        gap: 8px;
+        margin-bottom: 2px;
+      }
+
+      .account-pill {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 9px 11px;
+        border-radius: 16px;
+      }
+
+      .account-text strong,
+      .account-text span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .account-config,
+      .account-logout {
+        flex: 0 0 auto;
+        min-height: 40px !important;
+      }
+    }
+
   </style>
 </head>
 
@@ -797,11 +888,20 @@
         <h1>Zap<span>Fechou</span></h1>
         <div class="subtitle">CRM simples para vendedores de veículos no WhatsApp</div>
       </div>
-      <div class="badge">● ONLINE • SUPABASE</div>
-      <div id="userChip" class="user-chip"><span id="userGreeting">Olá</span><button onclick="sair()">Sair</button></div>
+      <div id="accountArea" class="account-area">
+        <div class="account-pill">
+          <div class="account-icon">👤</div>
+          <div class="account-text">
+            <strong id="userGreeting">Olá</strong>
+            <span id="userStatus">● usuário online</span>
+          </div>
+        </div>
+        <button class="account-config" onclick="abrirConfiguracoes()" title="Configurações">⚙</button>
+        <button class="account-logout" onclick="sair()">Sair</button>
+      </div>
     </div>
 
-    <div id="welcomeBox" class="welcome-box">Olá, <strong id="welcomeName">vendedor</strong> 👋 Seus clientes estão protegidos na sua conta.</div>
+    <div id="welcomeBox" class="welcome-box">👋 Bem-vindo, <strong id="welcomeName">vendedor</strong>. Seus clientes estão protegidos na sua conta.</div>
 
     <div class="stats">
       <div class="stat"><span>Total de clientes</span><strong id="total">0</strong><small>clientes cadastrados</small></div>
@@ -1131,18 +1231,34 @@ function renderizar() {
 }
 
 
+function formatarNome(nome) {
+  const limpo = String(nome || "")
+    .replace(/[0-9]/g, "")
+    .replace(/[._-]+/g, " ")
+    .trim()
+    .split(/\s+/)[0];
+
+  return limpo ? limpo.charAt(0).toUpperCase() + limpo.slice(1).toLowerCase() : "vendedor";
+}
+
 function nomeDoUsuario() {
+  const metaNome = usuarioAtual?.user_metadata?.name || usuarioAtual?.user_metadata?.full_name;
+  if (metaNome) return formatarNome(metaNome);
+
   const email = usuarioAtual?.email || "vendedor";
-  const nome = email.split("@")[0].replace(/[._-]+/g, " ").trim();
-  return nome ? nome.charAt(0).toUpperCase() + nome.slice(1) : "vendedor";
+  return formatarNome(email.split("@")[0]);
 }
 
 function atualizarTopoUsuario() {
   const nome = nomeDoUsuario();
   document.getElementById("userGreeting").innerText = `Olá, ${nome}`;
   document.getElementById("welcomeName").innerText = nome;
-  document.getElementById("userChip").style.display = "flex";
+  document.getElementById("accountArea").style.display = "flex";
   document.getElementById("welcomeBox").style.display = "block";
+}
+
+function abrirConfiguracoes() {
+  alert("Configurações básicas em breve: nome da conta, preferências e importação/exportação.");
 }
 
 async function verificarSessao() {
@@ -1152,7 +1268,7 @@ async function verificarSessao() {
     usuarioAtual = null;
     clientes = [];
     document.getElementById("loginScreen").style.display = "flex";
-    document.getElementById("userChip").style.display = "none";
+    document.getElementById("accountArea").style.display = "none";
     document.getElementById("welcomeBox").style.display = "none";
     atualizarDashboard();
     renderizar();
