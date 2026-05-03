@@ -893,7 +893,7 @@
           <div class="account-icon">👤</div>
           <div class="account-text">
             <strong id="userGreeting">Olá</strong>
-            <span id="userStatus">● usuário online</span>
+            <span id="userStatus">● Online</span>
           </div>
         </div>
         <button class="account-config" onclick="abrirConfiguracoes()" title="Configurações">⚙</button>
@@ -1251,10 +1251,10 @@ function nomeDoUsuario() {
 
 function atualizarTopoUsuario() {
   const nome = nomeDoUsuario();
-  document.getElementById("userGreeting").innerText = `Olá, ${nome}`;
-  document.getElementById("welcomeName").innerText = nome;
+  document.getElementById("userGreeting").innerText = nome;
+  document.getElementById("userStatus").innerText = "● Online";
   document.getElementById("accountArea").style.display = "flex";
-  document.getElementById("welcomeBox").style.display = "block";
+  document.getElementById("welcomeBox").style.display = "none";
 }
 
 function abrirConfiguracoes() {
