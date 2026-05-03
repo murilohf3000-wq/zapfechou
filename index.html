@@ -43,13 +43,13 @@
       width: 62px;
       height: 62px;
       border-radius: 18px;
-      background: linear-gradient(135deg, #00ff75, #1dd3ff);
+      background: linear-gradient(135deg, #00ff75, #00ffb3);
       color: #020617;
       display: grid;
       place-items: center;
       font-weight: 900;
       font-size: 24px;
-      box-shadow: 0 0 35px rgba(0,255,120,.35);
+      box-shadow: 0 0 35px rgba(0,255,120,.6);
     }
 
     h1 { margin: 0; font-size: 38px; }
@@ -150,6 +150,13 @@
       box-shadow: 0 0 25px rgba(0,255,120,.25);
     }
 
+    .btn-cancel {
+      background: rgba(148,163,184,.13);
+      color: #cbd5e1;
+      border: 1px solid rgba(148,163,184,.25);
+      display: none;
+    }
+
     .filters {
       padding: 16px;
       margin-bottom: 24px;
@@ -207,6 +214,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 14px;
+      gap: 12px;
     }
 
     .lead h3 { margin: 0; font-size: 24px; }
@@ -216,6 +224,9 @@
       border-radius: 999px;
       font-weight: 900;
       font-size: 13px;
+      display: inline-block;
+      margin-left: 6px;
+      margin-bottom: 6px;
     }
 
     .quente { background: rgba(239,68,68,.15); color: #ff6b6b; border: 1px solid rgba(239,68,68,.35); }
@@ -255,6 +266,7 @@
       padding: 12px;
       margin-bottom: 14px;
       color: #cbd5e1;
+      white-space: pre-wrap;
     }
 
     .actions {
@@ -269,7 +281,7 @@
       box-shadow: 0 0 22px rgba(37,211,102,.25);
     }
 
-    .btn-contact {
+    .btn-edit {
       background: rgba(0,255,120,.12);
       color: #00ff75;
       border: 1px solid rgba(0,255,120,.25);
@@ -295,6 +307,7 @@
       .stats, .form-grid, .lead-grid { grid-template-columns: 1fr; }
       textarea { grid-column: auto; }
       h1 { font-size: 30px; }
+      .lead-header { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
@@ -321,7 +334,7 @@
   </div>
 
   <div class="panel">
-    <h2>Adicionar novo cliente</h2>
+    <h2 id="formTitle">Adicionar novo cliente</h2>
 
     <div class="form-grid">
       <input id="nome" placeholder="Nome do cliente">
@@ -345,7 +358,8 @@
 
       <textarea id="observacao" placeholder="Observação: financiamento, entrada, horário para contato, preferência do cliente..."></textarea>
 
-      <button class="btn-add" onclick="adicionar()">+ Adicionar cliente</button>
+      <button id="btnSalvar" class="btn-add" onclick="salvarCliente()">+ Adicionar cliente</button>
+      <button id="btnCancelar" class="btn-cancel" onclick="cancelarEdicao()">Cancelar edição</button>
     </div>
   </div>
 
@@ -378,6 +392,7 @@ const supabaseClient = supabase.createClient(
 
 let clientes = [];
 let filtroAtual = "Todos";
+let editandoId = null;
 
 function dinheiro(valor) {
   if (!valor) return "Não informado";
@@ -403,10 +418,15 @@ async function abrirWhatsApp(item) {
   let numero = limparTelefone(item.telefone);
   if (!numero.startsWith("55")) numero = "55" + numero;
 
-  await supabaseClient
+  const { error } = await supabaseClient
     .from("leads")
     .update({ ultimo_contato: new Date().toISOString() })
     .eq("id", item.id);
+
+  if (error) {
+    alert("Erro ao atualizar contato: " + error.message);
+    return;
+  }
 
   const texto = encodeURIComponent(gerarMensagem(item));
   window.open(`https://wa.me/${numero}?text=${texto}`, "_blank");
@@ -414,7 +434,44 @@ async function abrirWhatsApp(item) {
   carregar();
 }
 
-async function adicionar() {
+function preencherFormulario(item) {
+  editandoId = item.id;
+
+  document.getElementById("nome").value = item.nome || "";
+  document.getElementById("telefone").value = item.telefone || "";
+  document.getElementById("carro").value = item.carro || "";
+  document.getElementById("valor").value = item.valor || "";
+  document.getElementById("temperatura").value = item.temperatura || "";
+  document.getElementById("status").value = item.status || "Novo";
+  document.getElementById("observacao").value = item.observacao || "";
+
+  document.getElementById("formTitle").innerText = "Editando cliente";
+  document.getElementById("btnSalvar").innerText = "Salvar alterações";
+  document.getElementById("btnCancelar").style.display = "inline-block";
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function cancelarEdicao() {
+  editandoId = null;
+  limparFormulario();
+}
+
+function limparFormulario() {
+  document.getElementById("nome").value = "";
+  document.getElementById("telefone").value = "";
+  document.getElementById("carro").value = "";
+  document.getElementById("valor").value = "";
+  document.getElementById("temperatura").value = "";
+  document.getElementById("status").value = "Novo";
+  document.getElementById("observacao").value = "";
+
+  document.getElementById("formTitle").innerText = "Adicionar novo cliente";
+  document.getElementById("btnSalvar").innerText = "+ Adicionar cliente";
+  document.getElementById("btnCancelar").style.display = "none";
+}
+
+async function salvarCliente() {
   const nome = document.getElementById("nome").value.trim();
   const telefone = document.getElementById("telefone").value.trim();
   const carro = document.getElementById("carro").value.trim();
@@ -428,21 +485,37 @@ async function adicionar() {
     return;
   }
 
-  const { error } = await supabaseClient.from("leads").insert([{
-    nome, telefone, carro, valor: valor || null, temperatura, status, observacao,
-    ultimo_contato: new Date().toISOString()
-  }]);
+  const dados = {
+    nome,
+    telefone,
+    carro,
+    valor: valor || null,
+    temperatura,
+    status,
+    observacao
+  };
 
-  if (error) {
-    alert("Erro ao salvar: " + error.message);
-    console.log(error);
+  let resultado;
+
+  if (editandoId) {
+    resultado = await supabaseClient
+      .from("leads")
+      .update(dados)
+      .eq("id", editandoId);
+  } else {
+    resultado = await supabaseClient
+      .from("leads")
+      .insert([{ ...dados, ultimo_contato: new Date().toISOString() }]);
+  }
+
+  if (resultado.error) {
+    alert("Erro ao salvar: " + resultado.error.message);
+    console.log(resultado.error);
     return;
   }
 
-  document.querySelectorAll("input, textarea").forEach(c => c.value = "");
-  document.getElementById("status").value = "Novo";
-  document.getElementById("temperatura").value = "";
-
+  editandoId = null;
+  limparFormulario();
   carregar();
 }
 
@@ -518,6 +591,13 @@ function classeStatus(status) {
   return "novo";
 }
 
+function textoUltimoContato(data) {
+  const dias = diasSemContato(data);
+  if (dias === 0) return "Hoje";
+  if (dias === 1) return "1 dia atrás";
+  return dias + " dias atrás";
+}
+
 function renderizar() {
   const lista = document.getElementById("lista");
   const filtrados = clientes.filter(aplicaFiltro);
@@ -549,15 +629,15 @@ function renderizar() {
             <div class="info"><span>Veículo</span><strong>${item.carro}</strong></div>
             <div class="info"><span>Valor</span><strong>${dinheiro(item.valor)}</strong></div>
             <div class="info"><span>Status</span><strong class="tag ${classeStatus(item.status)}">${item.status || "Novo"}</strong></div>
-            <div class="info"><span>Último contato</span><strong>${dias === 0 ? "Hoje" : dias + " dias atrás"}</strong></div>
+            <div class="info"><span>Último contato</span><strong>${textoUltimoContato(item.ultimo_contato)}</strong></div>
           </div>
 
           ${item.observacao ? `<div class="obs"><strong>Observação:</strong><br>${item.observacao}</div>` : ""}
 
           <div class="actions">
-            <button class="btn-wpp" onclick='abrirWhatsApp(${JSON.stringify(item)})'>💬 Chamar no WhatsApp</button>
-            <button class="btn-contact" onclick='abrirWhatsApp(${JSON.stringify(item)})'>Atualizar contato</button>
-            <button class="btn-delete" onclick='excluir("${item.id}")'>Excluir cliente</button>
+            <button class="btn-wpp" onclick='abrirWhatsApp(${JSON.stringify(item)})'>💬 WhatsApp</button>
+            <button class="btn-edit" onclick='preencherFormulario(${JSON.stringify(item)})'>✏️ Editar cliente</button>
+            <button class="btn-delete" onclick='excluir("${item.id}")'>Excluir</button>
           </div>
         </div>
       </div>
