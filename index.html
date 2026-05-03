@@ -1,305 +1,734 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
+  <meta charset="UTF-8" />
+  <title>ZapFechou PRO</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#020617">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<title>ZapFechou PRO</title>
+  <style>
+    * { box-sizing: border-box; }
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: radial-gradient(circle at top left, rgba(0,255,100,.12), transparent 28%), #020403;
+      color: #f8fafc;
+      min-height: 100vh;
+    }
 
-<style>
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 100vh;
+    }
 
-* { box-sizing: border-box; }
+    .sidebar {
+      border-right: 1px solid rgba(0,255,100,.18);
+      background: rgba(0,0,0,.55);
+      padding: 22px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
 
-html, body {
-  margin: 0;
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: #020403;
-  color: #f8fafc;
-}
+    .side-logo {
+      width: 105px;
+      height: 105px;
+      margin: 0 auto 25px;
+      border-radius: 22px;
+      border: 1px solid rgba(0,255,100,.4);
+      display: grid;
+      place-items: center;
+      color: #00ff66;
+      font-size: 42px;
+      font-weight: 900;
+      box-shadow: 0 0 35px rgba(0,255,100,.18);
+    }
 
-/* ===== LAYOUT ===== */
+    .nav-item {
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
 
-.layout {
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  min-height: 100vh;
-}
+    .nav-item.active {
+      background: rgba(0,255,100,.12);
+      color: #00ff66;
+      border-left: 4px solid #00ff66;
+    }
 
-.sidebar {
-  border-right: 1px solid rgba(0,255,100,.18);
-  background: rgba(0,0,0,.55);
-  padding: 22px;
-}
+    .quick {
+      position: absolute;
+      bottom: 22px;
+      left: 18px;
+      right: 18px;
+      border: 1px solid rgba(0,255,100,.18);
+      border-radius: 18px;
+      padding: 18px;
+      text-align: center;
+      background: rgba(0,255,100,.06);
+    }
 
-.app {
-  padding: 30px;
-  max-width: 1350px;
-  margin: auto;
-  width: 100%;
-}
+    .app {
+      padding: 30px;
+      max-width: 1350px;
+      width: 100%;
+      margin: auto;
+    }
 
-/* ===== TOPO ===== */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 26px;
+    }
 
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
+    h1 {
+      margin: 0;
+      font-size: 38px;
+      letter-spacing: -1px;
+    }
 
-h1 {
-  font-size: 32px;
-  margin: 0;
-}
+    h1 span { color: #00ff66; }
 
-h1 span { color: #00ff66; }
+    .subtitle {
+      color: #a7b4c8;
+      margin-top: 6px;
+    }
 
-/* ===== CARDS ===== */
+    .badge {
+      padding: 11px 18px;
+      border-radius: 999px;
+      color: #00ff66;
+      border: 1px solid rgba(0,255,100,.35);
+      font-weight: 900;
+      background: rgba(0,255,100,.06);
+    }
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 16px;
-  margin-bottom: 20px;
-}
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-bottom: 22px;
+    }
 
-.stat {
-  padding: 20px;
-  border-radius: 18px;
-  background: rgba(3,8,7,.85);
-  border: 1px solid rgba(0,255,100,.2);
-}
+    .stat, .panel, .filters, .table-box {
+      background: rgba(3,8,7,.82);
+      border: 1px solid rgba(0,255,100,.20);
+      border-radius: 20px;
+      box-shadow: 0 0 40px rgba(0,0,0,.45);
+    }
 
-.stat strong {
-  font-size: 28px;
-  display: block;
-}
+    .stat {
+      min-height: 112px;
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+    }
 
-/* ===== FORM ===== */
+    .stat::after {
+      content: "";
+      position: absolute;
+      right: -30px;
+      bottom: -30px;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(0,255,100,.18), transparent 70%);
+    }
 
-.panel {
-  padding: 18px;
-  border-radius: 18px;
-  background: rgba(3,8,7,.85);
-  border: 1px solid rgba(0,255,100,.2);
-  margin-bottom: 20px;
-}
+    .stat span {
+      color: #d1d5db;
+      font-size: 14px;
+    }
 
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr .9fr 1fr .7fr .8fr .8fr;
-  gap: 10px;
-}
+    .stat strong {
+      display: block;
+      font-size: 34px;
+      margin-top: 8px;
+    }
 
-textarea {
-  grid-column: 1 / -1;
-  min-height: 60px;
-}
+    .stat small { color: #00ff66; }
 
-input, select, textarea {
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(148,163,184,.22);
-  background: rgba(0,0,0,.45);
-  color: white;
-}
+    .panel {
+      padding: 20px;
+      margin-bottom: 18px;
+    }
 
-button {
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-}
+    .panel h2, .section-title h2 {
+      margin: 0 0 16px;
+    }
 
-.btn-add {
-  background: #00ff66;
-  color: #000;
-}
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr .9fr 1fr .65fr .75fr .75fr;
+      gap: 12px;
+      align-items: center;
+    }
 
-/* ===== LISTA ===== */
+    textarea {
+      grid-column: 1 / -1;
+      min-height: 70px;
+      resize: vertical;
+    }
 
-.table-box {
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid rgba(0,255,100,.2);
-}
+    input, select, textarea {
+      width: 100%;
+      padding: 14px;
+      border-radius: 13px;
+      border: 1px solid rgba(148,163,184,.22);
+      background: rgba(0,0,0,.45);
+      color: white;
+      font-size: 14px;
+    }
 
-.lead-row {
-  padding: 14px;
-  border-bottom: 1px solid rgba(148,163,184,.1);
-}
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #00ff66;
+      box-shadow: 0 0 0 3px rgba(0,255,100,.12);
+    }
 
-/* ===== MOBILE ===== */
+    button {
+      border: none;
+      border-radius: 13px;
+      padding: 13px 16px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: .2s;
+    }
 
-@media (max-width: 1050px) {
+    button:hover { transform: translateY(-2px); }
 
-  .layout {
-    display: block;
-  }
+    .btn-add {
+      background: linear-gradient(135deg, #00ff66, #00b84a);
+      color: #020403;
+      box-shadow: 0 0 22px rgba(0,255,100,.25);
+    }
 
-  .sidebar {
-    display: none;
-  }
+    .btn-cancel {
+      display: none;
+      background: rgba(148,163,184,.12);
+      color: #cbd5e1;
+      border: 1px solid rgba(148,163,184,.22);
+    }
 
-  .app {
-    padding: 16px;
-  }
+    .filters {
+      padding: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
 
-  .stats {
-    grid-template-columns: repeat(2,1fr);
-    gap: 10px;
-  }
+    .filter-btn {
+      background: rgba(0,0,0,.45);
+      color: #f8fafc;
+      border: 1px solid rgba(148,163,184,.22);
+      padding: 10px 14px;
+    }
 
-  .stat {
-    padding: 14px;
-  }
+    .filter-btn.active {
+      background: linear-gradient(135deg, #00ff66, #00b84a);
+      color: #020403;
+    }
 
-  .stat strong {
-    font-size: 22px;
-  }
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
 
-  .form-grid {
-    grid-template-columns: 1fr 1fr;
-  }
+    .hint { color: #94a3b8; font-size: 14px; }
 
-  textarea {
-    grid-column: 1 / -1;
-  }
+    .table-box {
+      overflow: hidden;
+    }
 
-  .lead-row {
-    border-radius: 12px;
-    margin-bottom: 10px;
-    background: rgba(3,8,7,.9);
-  }
+    .table-head, .lead-row {
+      display: grid;
+      grid-template-columns: 1.5fr 1.1fr 1.2fr .9fr 1fr 1fr .9fr;
+      gap: 12px;
+      align-items: center;
+    }
 
-}
+    .table-head {
+      padding: 14px 18px;
+      color: #86efac;
+      font-size: 12px;
+      font-weight: 900;
+      border-bottom: 1px solid rgba(0,255,100,.14);
+      background: rgba(0,255,100,.05);
+      text-transform: uppercase;
+    }
 
-@media (max-width: 520px) {
+    .lead-row {
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(148,163,184,.10);
+    }
 
-  .stats {
-    grid-template-columns: 1fr;
-  }
+    .lead-row:last-child { border-bottom: none; }
 
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
+    .client {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
 
-}
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(0,255,100,.35);
+      color: #00ff66;
+      font-weight: 900;
+      background: rgba(0,255,100,.08);
+    }
 
-</style>
+    .client strong { display: block; }
+    .client small { color: #00ff66; }
+
+    .muted { color: #94a3b8; font-size: 13px; }
+
+    .tag {
+      padding: 7px 11px;
+      border-radius: 10px;
+      font-weight: 900;
+      font-size: 13px;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    .quente { background: rgba(239,68,68,.16); color: #ff6b6b; border: 1px solid rgba(239,68,68,.35); }
+    .morno { background: rgba(245,158,11,.16); color: #fbbf24; border: 1px solid rgba(245,158,11,.35); }
+    .frio { background: rgba(14,165,233,.16); color: #38bdf8; border: 1px solid rgba(14,165,233,.35); }
+    .novo { background: rgba(56,189,248,.15); color: #38bdf8; border: 1px solid rgba(56,189,248,.35); }
+    .negociando { background: rgba(0,255,100,.13); color: #00ff66; border: 1px solid rgba(0,255,100,.35); }
+    .perdido { background: rgba(239,68,68,.12); color: #ff6b6b; border: 1px solid rgba(239,68,68,.30); }
+    .parado { color: #f59e0b; font-weight: 900; }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+    }
+
+    .btn-wpp {
+      background: rgba(0,255,100,.12);
+      color: #00ff66;
+      border: 1px solid rgba(0,255,100,.35);
+    }
+
+    .btn-edit {
+      background: rgba(148,163,184,.10);
+      color: #cbd5e1;
+      border: 1px solid rgba(148,163,184,.22);
+    }
+
+    .btn-delete {
+      background: rgba(239,68,68,.12);
+      color: #ff6b6b;
+      border: 1px solid rgba(239,68,68,.25);
+    }
+
+    .obs-line {
+      grid-column: 1 / -1;
+      color: #cbd5e1;
+      font-size: 13px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(148,163,184,.12);
+      padding: 10px;
+      border-radius: 12px;
+      margin-top: -4px;
+      white-space: pre-wrap;
+    }
+
+    .empty {
+      padding: 26px;
+      text-align: center;
+      color: #94a3b8;
+    }
+
+    @media (max-width: 1050px) {
+      .layout { display: block; }
+      .sidebar { display: none; }
+      .app { padding: 18px; }
+      .topbar { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .stats, .form-grid { grid-template-columns: 1fr; }
+      textarea { grid-column: auto; }
+      .table-head { display: none; }
+      .lead-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .actions { justify-content: flex-start; }
+    }
+  </style>
 </head>
 
 <body>
-
 <div class="layout">
 
-<div class="sidebar">
-  <h2>ZF</h2>
-</div>
+  <aside class="sidebar">
+    <div class="side-logo">ZF</div>
+    <div class="nav-item active">▦ Dashboard</div>
+    <div class="nav-item">○ Clientes</div>
+    <div class="nav-item">$ Negociações</div>
+    <div class="nav-item">▣ Veículos</div>
+    <div class="nav-item">⚙ Configurações</div>
 
-<div class="app">
+    <div class="quick">
+      <div style="font-size:36px;color:#00ff66;">☏</div>
+      <strong>Atendimento rápido</strong>
+      <p class="muted">Fale direto no WhatsApp com seus clientes</p>
+    </div>
+  </aside>
 
-<div class="topbar">
-  <h1>Zap<span>Fechou</span></h1>
-</div>
+  <main class="app">
+    <div class="topbar">
+      <div>
+        <h1>Zap<span>Fechou</span></h1>
+        <div class="subtitle">CRM simples para vendedores de veículos no WhatsApp</div>
+      </div>
+      <div class="badge">● ONLINE • SUPABASE</div>
+    </div>
 
-<div class="stats">
-  <div class="stat"><span>Total</span><strong id="total">0</strong></div>
-  <div class="stat"><span>Negociando</span><strong id="negociando">0</strong></div>
-  <div class="stat"><span>Fechados</span><strong id="fechados">0</strong></div>
-  <div class="stat"><span>Parados</span><strong id="parados">0</strong></div>
-</div>
+    <div class="stats">
+      <div class="stat"><span>Total de clientes</span><strong id="total">0</strong><small>clientes cadastrados</small></div>
+      <div class="stat"><span>Em negociação</span><strong id="negociando">0</strong><small>em andamento</small></div>
+      <div class="stat"><span>Fechados</span><strong id="fechados">0</strong><small>vendas ganhas</small></div>
+      <div class="stat"><span>Parados</span><strong id="parados">0</strong><small>precisam atenção</small></div>
+    </div>
 
-<div class="panel">
+    <div class="panel">
+      <h2 id="formTitle">Adicionar novo cliente</h2>
 
-<div class="form-grid">
-  <input id="nome" placeholder="Nome">
-  <input id="telefone" placeholder="WhatsApp">
-  <input id="carro" placeholder="Carro">
-  <input id="valor" type="number" placeholder="Valor">
+      <div class="form-grid">
+        <input id="nome" placeholder="👤 Nome do cliente">
+        <input id="telefone" placeholder="☏ WhatsApp">
+        <input id="carro" placeholder="🚗 Veículo de interesse">
+        <input id="valor" type="number" placeholder="Valor R$">
 
-  <select id="temperatura">
-    <option>Quente</option>
-    <option>Morno</option>
-    <option>Frio</option>
-  </select>
+        <select id="temperatura">
+          <option value="">Temperatura</option>
+          <option>Quente</option>
+          <option>Morno</option>
+          <option>Frio</option>
+        </select>
 
-  <select id="status">
-    <option>Novo</option>
-    <option>Em negociação</option>
-    <option>Fechado</option>
-    <option>Perdido</option>
-  </select>
+        <select id="status">
+          <option>Novo</option>
+          <option>Em negociação</option>
+          <option>Fechado</option>
+          <option>Perdido</option>
+        </select>
 
-  <textarea id="observacao" placeholder="Observação"></textarea>
+        <textarea id="observacao" placeholder="Observação: financiamento, entrada, horário para contato, preferência do cliente..."></textarea>
 
-  <button class="btn-add" onclick="salvarCliente()">Salvar</button>
-</div>
+        <button id="btnSalvar" class="btn-add" onclick="salvarCliente()">+ Adicionar cliente</button>
+        <button id="btnCancelar" class="btn-cancel" onclick="cancelarEdicao()">Cancelar edição</button>
+      </div>
+    </div>
 
-</div>
+    <div class="filters">
+      <button class="filter-btn active" onclick="filtrar('Todos', this)">Todos</button>
+      <button class="filter-btn" onclick="filtrar('Novo', this)">Novos</button>
+      <button class="filter-btn" onclick="filtrar('Em negociação', this)">Em negociação</button>
+      <button class="filter-btn" onclick="filtrar('Fechado', this)">Fechados</button>
+      <button class="filter-btn" onclick="filtrar('Perdido', this)">Perdidos</button>
+      <button class="filter-btn" onclick="filtrar('Quente', this)">🔥 Quentes</button>
+      <button class="filter-btn" onclick="filtrar('Morno', this)">🟡 Mornos</button>
+      <button class="filter-btn" onclick="filtrar('Frio', this)">❄️ Frios</button>
+      <button class="filter-btn" onclick="filtrar('Parados', this)">⏰ Parados</button>
+    </div>
 
-<div class="table-box">
-  <div id="lista"></div>
-</div>
+    <div class="section-title">
+      <h2>Clientes cadastrados</h2>
+      <div class="hint">Parado = mais de 3 dias sem contato</div>
+    </div>
 
-</div>
+    <div class="table-box">
+      <div class="table-head">
+        <div>Cliente</div>
+        <div>WhatsApp</div>
+        <div>Veículo</div>
+        <div>Valor</div>
+        <div>Temperatura</div>
+        <div>Status</div>
+        <div>Ações</div>
+      </div>
+      <div id="lista"></div>
+    </div>
+  </main>
+
 </div>
 
 <script>
-
 const supabaseClient = supabase.createClient(
   "https://khuxxjtcunknikkpdgfi.supabase.co",
   "sb_publishable_E9roE3LHgPf42wAi8DXzSA_IjvXBKgl"
 );
 
 let clientes = [];
+let filtroAtual = "Todos";
+let editandoId = null;
 
-async function carregar() {
-  const { data } = await supabaseClient.from("leads").select("*");
-  clientes = data || [];
-  renderizar();
+function dinheiro(valor) {
+  if (!valor) return "Não informado";
+  return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-async function salvarCliente() {
-  const nome = document.getElementById("nome").value;
-  const telefone = document.getElementById("telefone").value;
-  const carro = document.getElementById("carro").value;
+function diasSemContato(data) {
+  if (!data) return 0;
+  return Math.floor((new Date() - new Date(data)) / (1000 * 60 * 60 * 24));
+}
 
-  if (!nome || !telefone || !carro) {
-    alert("Preenche tudo");
-    return;
-  }
+function limparTelefone(numero) {
+  return String(numero || "").replace(/\D/g, "");
+}
 
-  await supabaseClient.from("leads").insert([{ nome, telefone, carro }]);
+function gerarMensagem(item) {
+  return `Oi ${item.nome}, tudo bem? Vi que você demonstrou interesse no ${item.carro}. Ainda está procurando esse veículo? Posso te passar as condições atualizadas.`;
+}
+
+function iniciais(nome) {
+  return String(nome || "")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(p => p[0])
+    .join("")
+    .toUpperCase();
+}
+
+async function abrirWhatsApp(id) {
+  const item = clientes.find(c => c.id === id);
+  if (!item) return;
+
+  let numero = limparTelefone(item.telefone);
+  if (!numero.startsWith("55")) numero = "55" + numero;
+
+  await supabaseClient
+    .from("leads")
+    .update({ ultimo_contato: new Date().toISOString() })
+    .eq("id", item.id);
+
+  const texto = encodeURIComponent(gerarMensagem(item));
+  window.open(`https://wa.me/${numero}?text=${texto}`, "_blank");
 
   carregar();
 }
 
+function preencherFormulario(id) {
+  const item = clientes.find(c => c.id === id);
+  if (!item) return;
+
+  editandoId = item.id;
+
+  document.getElementById("nome").value = item.nome || "";
+  document.getElementById("telefone").value = item.telefone || "";
+  document.getElementById("carro").value = item.carro || "";
+  document.getElementById("valor").value = item.valor || "";
+  document.getElementById("temperatura").value = item.temperatura || "";
+  document.getElementById("status").value = item.status || "Novo";
+  document.getElementById("observacao").value = item.observacao || "";
+
+  document.getElementById("formTitle").innerText = "Editando cliente";
+  document.getElementById("btnSalvar").innerText = "Salvar alterações";
+  document.getElementById("btnCancelar").style.display = "inline-block";
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function cancelarEdicao() {
+  editandoId = null;
+  limparFormulario();
+}
+
+function limparFormulario() {
+  document.getElementById("nome").value = "";
+  document.getElementById("telefone").value = "";
+  document.getElementById("carro").value = "";
+  document.getElementById("valor").value = "";
+  document.getElementById("temperatura").value = "";
+  document.getElementById("status").value = "Novo";
+  document.getElementById("observacao").value = "";
+
+  document.getElementById("formTitle").innerText = "Adicionar novo cliente";
+  document.getElementById("btnSalvar").innerText = "+ Adicionar cliente";
+  document.getElementById("btnCancelar").style.display = "none";
+}
+
+async function salvarCliente() {
+  const dados = {
+    nome: document.getElementById("nome").value.trim(),
+    telefone: document.getElementById("telefone").value.trim(),
+    carro: document.getElementById("carro").value.trim(),
+    valor: document.getElementById("valor").value || null,
+    temperatura: document.getElementById("temperatura").value,
+    status: document.getElementById("status").value,
+    observacao: document.getElementById("observacao").value.trim()
+  };
+
+  if (!dados.nome || !dados.telefone || !dados.carro) {
+    alert("Preencha nome, WhatsApp e veículo.");
+    return;
+  }
+
+  let resultado;
+
+  if (editandoId) {
+    resultado = await supabaseClient.from("leads").update(dados).eq("id", editandoId);
+  } else {
+    resultado = await supabaseClient.from("leads").insert([{ ...dados, ultimo_contato: new Date().toISOString() }]);
+  }
+
+  if (resultado.error) {
+    alert("Erro ao salvar: " + resultado.error.message);
+    return;
+  }
+
+  editandoId = null;
+  limparFormulario();
+  carregar();
+}
+
+async function excluir(id) {
+  if (!confirm("Excluir este cliente?")) return;
+
+  const { error } = await supabaseClient.from("leads").delete().eq("id", id);
+  if (error) {
+    alert("Erro ao excluir: " + error.message);
+    return;
+  }
+
+  carregar();
+}
+
+function filtrar(tipo, botao) {
+  filtroAtual = tipo;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  botao.classList.add("active");
+  renderizar();
+}
+
+function aplicaFiltro(item) {
+  const parado = diasSemContato(item.ultimo_contato) >= 3 && item.status !== "Fechado" && item.status !== "Perdido";
+
+  if (filtroAtual === "Todos") return true;
+  if (filtroAtual === "Parados") return parado;
+  if (["Quente", "Morno", "Frio"].includes(filtroAtual)) return item.temperatura === filtroAtual;
+  return item.status === filtroAtual;
+}
+
+async function carregar() {
+  const { data, error } = await supabaseClient
+    .from("leads")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    alert("Erro ao carregar: " + error.message);
+    return;
+  }
+
+  clientes = data || [];
+  atualizarDashboard();
+  renderizar();
+}
+
+function atualizarDashboard() {
+  document.getElementById("total").innerText = clientes.length;
+  document.getElementById("negociando").innerText = clientes.filter(c => c.status === "Em negociação").length;
+  document.getElementById("fechados").innerText = clientes.filter(c => c.status === "Fechado").length;
+  document.getElementById("parados").innerText = clientes.filter(c =>
+    diasSemContato(c.ultimo_contato) >= 3 && c.status !== "Fechado" && c.status !== "Perdido"
+  ).length;
+}
+
+function classeTemperatura(temp) {
+  if (temp === "Quente") return "quente";
+  if (temp === "Morno") return "morno";
+  if (temp === "Frio") return "frio";
+  return "novo";
+}
+
+function classeStatus(status) {
+  if (status === "Em negociação") return "negociando";
+  if (status === "Novo") return "novo";
+  if (status === "Perdido") return "perdido";
+  return "negociando";
+}
+
+function textoUltimoContato(data) {
+  const dias = diasSemContato(data);
+  if (dias === 0) return "Hoje";
+  if (dias === 1) return "1 dia atrás";
+  return dias + " dias atrás";
+}
+
 function renderizar() {
   const lista = document.getElementById("lista");
+  const filtrados = clientes.filter(aplicaFiltro);
+
   lista.innerHTML = "";
 
-  clientes.forEach(c => {
+  if (filtrados.length === 0) {
+    lista.innerHTML = `<div class="empty">Nenhum cliente encontrado nesse filtro.</div>`;
+    return;
+  }
+
+  filtrados.forEach(item => {
+    const dias = diasSemContato(item.ultimo_contato);
+    const parado = dias >= 3 && item.status !== "Fechado" && item.status !== "Perdido";
+
     lista.innerHTML += `
       <div class="lead-row">
-        <strong>${c.nome}</strong><br>
-        ${c.telefone} - ${c.carro}
+        <div class="client">
+          <div class="avatar">${iniciais(item.nome)}</div>
+          <div>
+            <strong>${item.nome}</strong>
+            <small>${parado ? "Parado" : item.status || "Novo"}</small>
+          </div>
+        </div>
+
+        <div>☏ ${item.telefone}</div>
+        <div><strong>${item.carro}</strong></div>
+        <div>${dinheiro(item.valor)}</div>
+        <div>${item.temperatura ? `<span class="tag ${classeTemperatura(item.temperatura)}">${item.temperatura}</span>` : `<span class="muted">Sem temp.</span>`}</div>
+        <div>
+          <span class="tag ${classeStatus(item.status)}">${item.status || "Novo"}</span>
+          ${parado ? `<div class="parado">${textoUltimoContato(item.ultimo_contato)}</div>` : `<div class="muted">${textoUltimoContato(item.ultimo_contato)}</div>`}
+        </div>
+
+        <div class="actions">
+          <button class="icon-btn btn-wpp" onclick='abrirWhatsApp("${item.id}")'>☏</button>
+          <button class="icon-btn btn-edit" onclick='preencherFormulario("${item.id}")'>✎</button>
+          <button class="icon-btn btn-delete" onclick='excluir("${item.id}")'>×</button>
+        </div>
+
+        ${item.observacao ? `<div class="obs-line"><strong>Obs:</strong> ${item.observacao}</div>` : ""}
       </div>
     `;
   });
-
-  document.getElementById("total").innerText = clientes.length;
 }
 
 carregar();
-
 </script>
-
 </body>
 </html>
