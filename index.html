@@ -1043,6 +1043,37 @@ function limparTelefone(numero) {
   return String(numero || "").replace(/\D/g, "");
 }
 
+function telefoneValido(numero) {
+  const limpo = limparTelefone(numero);
+
+  // Aceita formatos brasileiros comuns:
+  // 41999999999 ou 5541999999999
+  if (limpo.length === 11) return true;
+  if (limpo.length === 13 && limpo.startsWith("55")) return true;
+
+  return false;
+}
+
+function normalizarTelefone(numero) {
+  let limpo = limparTelefone(numero);
+
+  // Remove 55 apenas para comparar/salvar no padrão local com DDD
+  if (limpo.length === 13 && limpo.startsWith("55")) {
+    limpo = limpo.slice(2);
+  }
+
+  return limpo;
+}
+
+function clienteDuplicadoPorTelefone(telefone, idIgnorado = null) {
+  const telefoneBase = normalizarTelefone(telefone);
+
+  return clientes.find(c =>
+    normalizarTelefone(c.telefone) === telefoneBase &&
+    String(c.id) !== String(idIgnorado || "")
+  );
+}
+
 function gerarMensagem(item) {
   return `Oi ${item.nome}, tudo bem? Vi que você demonstrou interesse no ${item.carro}. Ainda está procurando esse veículo? Posso te passar as condições atualizadas.`;
 }
@@ -1133,6 +1164,24 @@ async function salvarCliente() {
     alert("Preencha nome, WhatsApp e veículo.");
     return;
   }
+
+  if (!telefoneValido(dados.telefone)) {
+    alert("WhatsApp inválido. Use DDD + número, exemplo: 41999999999.");
+    return;
+  }
+
+  const telefoneDuplicado = clienteDuplicadoPorTelefone(dados.telefone, editandoId);
+  if (telefoneDuplicado) {
+    alert(`Esse WhatsApp já está cadastrado para: ${telefoneDuplicado.nome || "cliente sem nome"}.`);
+    return;
+  }
+
+  if (dados.valor !== null && Number(dados.valor) < 0) {
+    alert("O valor não pode ser negativo.");
+    return;
+  }
+
+  dados.telefone = normalizarTelefone(dados.telefone);
 
   let resultado;
 
