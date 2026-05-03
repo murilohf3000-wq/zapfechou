@@ -853,6 +853,7 @@
     <h2>Zap<span>Fechou</span></h2>
     <p>Entre para acessar seus clientes com segurança.</p>
 
+    <input id="loginNome" type="text" placeholder="Seu nome">
     <input id="loginEmail" type="email" placeholder="Email">
     <input id="loginSenha" type="password" placeholder="Senha">
 
@@ -1242,7 +1243,7 @@ function formatarNome(nome) {
 }
 
 function nomeDoUsuario() {
-  const metaNome = usuarioAtual?.user_metadata?.name || usuarioAtual?.user_metadata?.full_name;
+  const metaNome = usuarioAtual?.user_metadata?.nome || usuarioAtual?.user_metadata?.name || usuarioAtual?.user_metadata?.full_name;
   if (metaNome) return formatarNome(metaNome);
 
   const email = usuarioAtual?.email || "vendedor";
@@ -1304,11 +1305,12 @@ async function entrar() {
 }
 
 async function criarConta() {
+  const nome = document.getElementById("loginNome").value.trim();
   const email = document.getElementById("loginEmail").value.trim();
   const senha = document.getElementById("loginSenha").value;
 
-  if (!email || !senha) {
-    alert("Preencha email e senha para criar a conta.");
+  if (!nome || !email || !senha) {
+    alert("Preencha nome, email e senha para criar a conta.");
     return;
   }
 
@@ -1319,7 +1321,12 @@ async function criarConta() {
 
   const { error } = await supabaseClient.auth.signUp({
     email,
-    password: senha
+    password: senha,
+    options: {
+      data: {
+        nome: nome
+      }
+    }
   });
 
   if (error) {
@@ -1327,7 +1334,7 @@ async function criarConta() {
     return;
   }
 
-  alert("Conta criada. Se o Supabase pedir confirmação, confirme pelo email e depois clique em Entrar.");
+  alert("Conta criada! Agora é só entrar.");
   verificarSessao();
 }
 
