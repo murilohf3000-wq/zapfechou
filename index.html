@@ -1003,6 +1003,101 @@
       }
     }
 
+
+    /* ===== AJUSTE FINAL: FOCO NO WHATSAPP ===== */
+    .quick {
+      display: none !important;
+    }
+
+    .table-head, .lead-row {
+      grid-template-columns: 1.45fr 1.05fr 1.15fr .85fr .95fr 1fr 1.35fr;
+    }
+
+    .actions {
+      gap: 8px;
+      justify-content: flex-end;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+
+    .btn-wpp-main {
+      min-width: 112px;
+      height: 44px;
+      padding: 0 14px;
+      border-radius: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      background: linear-gradient(135deg, #00ff66, #00b84a);
+      color: #02140a;
+      border: 1px solid rgba(0,255,100,.55);
+      box-shadow: 0 0 18px rgba(0,255,100,.28);
+      font-size: 13px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .btn-wpp-main svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      fill: currentColor;
+    }
+
+    .btn-wpp-main:hover {
+      box-shadow: 0 0 28px rgba(0,255,100,.38);
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .btn-edit-mid {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: rgba(148,163,184,.10);
+      color: #cbd5e1;
+      border: 1px solid rgba(148,163,184,.22);
+      font-size: 14px;
+    }
+
+    .btn-delete-small {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: rgba(239,68,68,.12);
+      color: #ff6b6b;
+      border: 1px solid rgba(239,68,68,.25);
+      font-size: 13px;
+    }
+
+    @media (max-width: 760px) {
+      .actions {
+        justify-content: flex-start !important;
+      }
+
+      .btn-wpp-main {
+        min-width: 128px;
+        height: 42px;
+      }
+
+      .btn-edit-mid {
+        width: 40px !important;
+        height: 40px !important;
+      }
+
+      .btn-delete-small {
+        width: 36px !important;
+        height: 36px !important;
+      }
+    }
+
+
   </style>
 </head>
 
@@ -1595,9 +1690,14 @@ function renderizar() {
         </div>
 
         <div class="actions">
-          <button class="icon-btn btn-wpp" onclick='abrirWhatsApp("${item.id}")'>☏</button>
-          <button class="icon-btn btn-edit" onclick='preencherFormulario("${item.id}")'>✎</button>
-          <button class="icon-btn btn-delete" onclick='excluir("${item.id}")'>×</button>
+          <button class="btn-wpp-main" onclick='abrirWhatsApp("${item.id}")' title="Chamar no WhatsApp">
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M16.04 3.2c-7.03 0-12.75 5.63-12.75 12.56 0 2.21.59 4.37 1.7 6.26L3.2 28.8l6.96-1.78a12.9 12.9 0 0 0 5.88 1.43c7.03 0 12.76-5.63 12.76-12.56S23.07 3.2 16.04 3.2Zm0 22.98c-1.88 0-3.72-.5-5.32-1.45l-.38-.23-4.13 1.06 1.1-4.02-.25-.41a10.2 10.2 0 0 1-1.55-5.37c0-5.68 4.72-10.3 10.53-10.3 5.82 0 10.54 4.62 10.54 10.3s-4.72 10.42-10.54 10.42Zm5.76-7.7c-.31-.16-1.86-.9-2.15-1-.29-.11-.5-.16-.71.15-.21.31-.81 1-.99 1.2-.18.21-.36.23-.67.08-.31-.16-1.32-.48-2.52-1.53-.93-.82-1.56-1.83-1.74-2.14-.18-.31-.02-.48.14-.63.14-.14.31-.36.47-.54.16-.18.21-.31.31-.52.1-.21.05-.39-.03-.54-.08-.16-.71-1.68-.97-2.3-.25-.6-.51-.52-.71-.53h-.6c-.21 0-.54.08-.83.39-.29.31-1.09 1.05-1.09 2.56s1.12 2.97 1.27 3.18c.16.21 2.2 3.31 5.34 4.64.75.32 1.33.51 1.78.65.75.23 1.43.2 1.97.12.6-.09 1.86-.75 2.12-1.47.26-.72.26-1.34.18-1.47-.08-.13-.29-.21-.6-.36Z"/>
+            </svg>
+            WhatsApp
+          </button>
+          <button class="btn-edit-mid" onclick='preencherFormulario("${item.id}")' title="Editar cliente">✎</button>
+          <button class="btn-delete-small" onclick='excluir("${item.id}")' title="Excluir cliente">×</button>
         </div>
 
         ${item.observacao ? `<div class="obs-line"><strong>Obs:</strong> ${item.observacao}</div>` : ""}
